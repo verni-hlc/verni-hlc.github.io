@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <style>
     .chart-container {
@@ -144,13 +145,15 @@ This narrative explores 2017 car fuel types, engine sizes, and manufacturer perf
     </div>
     <!-- Controls -->
     <div class="controls">
-        <button class="nav-button active" slide="1">Fuel Type</button>
-        <button class="nav-button" slide="2">Engine Cylinders</button>
-        <button class="nav-button" slide="3">Car Brand</button>
+        <button class="nav-button active" slide="0">Fuel Type</button>
+        <button class="nav-button" slide="1">Engine Cylinders</button>
+        <button class="nav-button" slide="2">Car Brand</button>
     </div>
 </div>
 <script>
 let data =[];
+let currentSlide = 0;
+const totalSlides = 3;
 // Load data from external CSV
 async function loadData() {
   console.log('Loading data from CSV...');
@@ -186,18 +189,22 @@ function setupEventListeners() {
     });
 }
 function goToSlide(slideIndex) {
-    if (slideIndex < 0 || slideIndex >= this.totalSlides) return;
+    if (slideIndex < 0 || slideIndex >= totalSlides) return;
+    
     // Hide current slide
     document.querySelectorAll('.slide').forEach(slide => {
         slide.classList.remove('active');
     });
+    
     // Show new slide
     document.querySelectorAll('.slide')[slideIndex].classList.add('active');
+    
     // Update navigation buttons
     document.querySelectorAll('.nav-button').forEach((button, index) => {
         button.classList.toggle('active', index === slideIndex);
     });
-    this.currentSlide = slideIndex;
+    
+    currentSlide = slideIndex;
 }
 // Chart 1: Fuel Type Comparison
 function createChart1() {
@@ -255,8 +262,6 @@ function createChart1() {
         .attr('x2', width)
         .attr('y1', d => yScale(d))
         .attr('y2', d => yScale(d));
-    // Create tooltip
-    const tooltip = d3.select('#tooltip');
     // Create fuel type groups
     const fuelGroups = g.selectAll('.fuel-group')
         .data(fuelStats)
@@ -401,8 +406,8 @@ function createChart1() {
 // Wait for DOM and D3 to be ready
 document.addEventListener('DOMContentLoaded', function() {
   loadData();
+  setupEventListeners();
 });
 </script>
 </body>
 </html>
-
