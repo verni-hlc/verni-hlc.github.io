@@ -35,6 +35,17 @@
         border-radius: 10px;
         margin-top: 20px;
     }
+    .tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
     .slide {
         display: none;
     }
@@ -88,15 +99,30 @@
         background: #667eea;
         transform: scale(1.2);
     }
+    .legend {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+    
+    .legend-color {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+    }
 </style>
-
-# 2017 Car Efficiency
-
-This narrative explores 2017 car fuel types, engine sizes, and manufacturer performance
 
 <!-- D3.js Library -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
 <body onload='loadData()'>
 <div class="content">
   <!-- Slide 1: Fuel Type Overview -->
@@ -108,6 +134,16 @@ This narrative explores 2017 car fuel types, engine sizes, and manufacturer perf
       <div class="chart-container">
           <svg id="chart1"></svg>
       </div>
+      <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #e74c3c;"></div>
+                <span>City MPG</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3498db;"></div>
+                <span>Highway MPG</span>
+            </div>
+        </div>
       <div class="insight-box">
           <h3>Key Insight</h3>
           <p>Electric vehicles show remarkably high MPG equivalent ratings, with some models exceeding 120 MPGe in city driving, demonstrating the efficiency potential of electric powertrains.</p>
@@ -123,6 +159,16 @@ This narrative explores 2017 car fuel types, engine sizes, and manufacturer perf
       <div class="chart-container">
           <svg id="chart2"></svg>
       </div>
+      <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #e74c3c;"></div>
+                <span>City MPG</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3498db;"></div>
+                <span>Highway MPG</span>
+            </div>
+        </div>
       <div class="insight-box">
           <h3>Key Insight</h3>
           <p>There's a clear inverse relationship: as cylinder count increases, fuel efficiency decreases. 4-cylinder engines offer the best balance of efficiency, while 12-cylinder luxury engines prioritize performance over economy.</p>
@@ -137,6 +183,7 @@ This narrative explores 2017 car fuel types, engine sizes, and manufacturer perf
       </p>
       <div class="chart-container">
           <svg id="chart3"></svg>
+       
       </div>
       <div class="insight-box">
           <h3>Key Insight</h3>
@@ -149,7 +196,9 @@ This narrative explores 2017 car fuel types, engine sizes, and manufacturer perf
         <button class="nav-button" slide="1">Engine Cylinders</button>
         <button class="nav-button" slide="2">Car Brand</button>
     </div>
+    
 </div>
+<div class="tooltip" id="tooltip"></div>
 <script>
 let data =[];
 let currentSlide = 0;
@@ -171,6 +220,8 @@ async function loadData() {
     }));
     console.log('Data processed:', data.length, 'rows');
   createChart1();
+  createChart2();
+  // createChart3();
   } catch (error) {
     console.error('Error loading data:', error);
     return
@@ -247,11 +298,6 @@ function createChart1() {
     const yScale = d3.scaleLinear()
         .domain([0, d3.max(fuelStats, d => Math.max(d.avgCity, d.avgHighway)) * 1.1])
         .range([height, 0]);
-    const colorScale = d3.scaleOrdinal()
-        .domain(["city", "highway"])
-        .range(['#e74c3c', '#3498db']);
-     const legend = d3.legendColor()
-        .scale(colorScale);
     // Add grid lines
     g.selectAll('.grid-line')
         .data(yScale.ticks(8))
@@ -398,10 +444,140 @@ function createChart1() {
         .attr('transform', `translate(${width / 2}, ${height + margin.bottom - 10})`)
         .style('text-anchor', 'middle')
         .text('Fuel Type');
-    svg.append("g")
-        .attr("class", "legend")
-        .attr("transform", `translate(${width - margin.right*2}, 20)`) // Adjust position as needed
-        .call(legend);
+}
+// Chart 2: Cylinders vs Efficiency Scatter Plot
+function createChart2() {
+  d3.select("#chart2").selectAll("*").remove();
+    
+  // Chart dimensions
+  const margin = { top: 20, right: 30, bottom: 80, left: 70 };
+  const width = 900 - margin.left - margin.right;
+  const height = 500 - margin.bottom - margin.top;
+  // Create SVG
+  const svg = d3.select('#chart2')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom);
+  const g = svg.append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Scales
+  const xScale = d3.scaleLinear()
+      .domain(d3.extent(data, d => d.cylinders))
+      .range([0, width])
+      .nice();
+
+  const yScale = d3.scaleLinear()
+      .domain([0, d3.max(data, d => Math.max(d.highwayMPG, d.cityMPG))])
+      .range([height, 0])
+      .nice();
+  
+  // Add grid lines
+  g.append("g")
+    .attr("class", "grid")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(xScale)
+        .tickSize(-height)
+        .tickFormat("")
+    )
+    .selectAll("line")
+    .attr("class", "grid-line");
+
+  g.append("g")
+    .attr("class", "grid")
+    .call(d3.axisLeft(yScale)
+        .tickSize(-width)
+        .tickFormat("")
+    )
+    .selectAll("line")
+    .attr("class", "grid-line");
+      
+  // Add axes
+  g.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .attr("class", "axis")
+      .call(d3.axisBottom(xScale));
+
+  g.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(yScale));
+
+  // Add axis labels
+  g.append("text")
+      .attr("class", "axis-label")
+      .attr("transform", `translate(${width/2}, ${height + 40})`)
+      .style("text-anchor", "middle")
+      .text("Engine Cylinders");
+
+  g.append("text")
+      .attr("class", "axis-label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left + 15)
+      .attr("x", 0 - (height / 2))
+      .style("text-anchor", "middle")
+      .text("Miles Per Gallon (MPG)");
+    
+  // Add highway MPG points
+  g.selectAll(".highway-point")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "highway-point")
+      .attr("cx", d => xScale(d.cylinders))
+      .attr("cy", d => yScale(d.highwayMPG))
+      .attr("r", 5)
+      .attr("fill", "#3498db")
+      .attr("opacity", 0.7)
+      .attr("stroke", "white")
+      .attr("stroke-width", 1);
+
+  // Add city MPG points
+  g.selectAll(".city-point")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "city-point")
+      .attr("cx", d => xScale(d.cylinders))
+      .attr("cy", d => yScale(d.cityMPG))
+      .attr("r", 5)
+      .attr("fill", "#e74c3c")
+      .attr("opacity", 0.7)
+      .attr("stroke", "white")
+      .attr("stroke-width", 1);
+  
+  // Tooltip
+  const tooltip = d3.select("#tooltip");
+
+  // Add interactions for highway points
+  g.selectAll(".highway-point")
+      .on("mouseover", function(event, d) {
+          d3.select(this).transition().duration(200).attr("r", 7).attr("opacity", 1);
+          tooltip.style("opacity", 1)
+              .html(`<strong>${d.make}</strong><br/>
+                     Cylinders: ${d.cylinders}<br/>
+                     Highway MPG: ${d.highwayMPG}`)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 10) + "px");
+      })
+      .on("mouseout", function() {
+          d3.select(this).transition().duration(200).attr("r", 5).attr("opacity", 0.7);
+          tooltip.style("opacity", 0);
+      });
+
+  // Add interactions for city points
+  g.selectAll(".city-point")
+      .on("mouseover", function(event, d) {
+          d3.select(this).transition().duration(200).attr("r", 7).attr("opacity", 1);
+          tooltip.style("opacity", 1)
+              .html(`<strong>${d.make}</strong><br/>
+                     Cylinders: ${d.cylinders}<br/>
+                     City MPG: ${d.cityMPG}`)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 10) + "px");
+      })
+      .on("mouseout", function() {
+          d3.select(this).transition().duration(200).attr("r", 5).attr("opacity", 0.7);
+          tooltip.style("opacity", 0);
+      });
 }
 // Wait for DOM and D3 to be ready
 document.addEventListener('DOMContentLoaded', function() {
