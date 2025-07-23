@@ -1,0 +1,408 @@
+<html>
+  <style>
+    .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+    .axis {
+        color: black;
+    }
+    .content {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .slide-title {
+        font-size: 1.8rem;
+        margin: 0 0 8px 0;
+        font-weight: 300;
+        color: #000000;
+    }
+    .slide-description {
+        color: #000000;
+    }
+    .insight-box {
+        background: linear-gradient(135deg, #74b9ff, #0984e3);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    .slide {
+        display: none;
+    }
+    .slide.active {
+        display: block;
+    }
+    .controls {
+        background: #f8f9fa;
+        padding: 20px 30px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        border-top: 1px solid #e9ecef;
+    }
+    .nav-button {
+        background: #fff;
+        border: 2px solid #dee2e6;
+        color: #495057;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    .nav-button:hover {
+        background: #f8f9fa;
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-1px);
+    }
+    .nav-button.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-1px);
+    }
+    .slide-indicators {
+        display: flex;
+        gap: 8px;
+    }
+    .indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #dee2e6;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .indicator.active {
+        background: #667eea;
+        transform: scale(1.2);
+    }
+</style>
+
+# 2017 Car Efficiency
+
+This narrative explores 2017 car fuel types, engine sizes, and manufacturer performance
+
+<!-- D3.js Library -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
+<body onload='loadData()'>
+<div class="content">
+  <!-- Slide 1: Fuel Type Overview -->
+  <div class="slide active" id="slide1">
+      <h2 class="slide-title">Chapter 1: The Fuel Revolution</h2>
+      <p class="slide-description">
+          While gasoline still dominates the automotive landscape, electric vehicles are making their mark with exceptional efficiency ratings. Let's explore how different fuel types perform.
+      </p>
+      <div class="chart-container">
+          <svg id="chart1"></svg>
+      </div>
+      <div class="insight-box">
+          <h3>Key Insight</h3>
+          <p>Electric vehicles show remarkably high MPG equivalent ratings, with some models exceeding 120 MPGe in city driving, demonstrating the efficiency potential of electric powertrains.</p>
+      </div>
+  </div>
+
+  <!-- Slide 2: Engine Cylinders vs Efficiency -->
+  <div class="slide" id="slide2">
+      <h2 class="slide-title">Chapter 2: The Cylinder Paradox</h2>
+      <p class="slide-description">
+          More cylinders typically mean more power, but what's the trade-off with fuel efficiency? This scatter plot reveals the relationship between engine size and fuel economy.
+      </p>
+      <div class="chart-container">
+          <svg id="chart2"></svg>
+      </div>
+      <div class="insight-box">
+          <h3>Key Insight</h3>
+          <p>There's a clear inverse relationship: as cylinder count increases, fuel efficiency decreases. 4-cylinder engines offer the best balance of efficiency, while 12-cylinder luxury engines prioritize performance over economy.</p>
+      </div>
+  </div>
+
+  <!-- Slide 3: Top Manufacturers -->
+  <div class="slide" id="slide3">
+      <h2 class="slide-title">Chapter 3: Brand Performance Leaders</h2>
+      <p class="slide-description">
+          Which manufacturers are leading the efficiency race? This ranking shows average combined MPG across all models for each brand.
+      </p>
+      <div class="chart-container">
+          <svg id="chart3"></svg>
+      </div>
+      <div class="insight-box">
+          <h3>Key Insight</h3>
+          <p>Tesla leads with pure electric efficiency, while traditional manufacturers like Honda and Toyota excel with hybrid technology and efficient gasoline engines. Luxury brands typically prioritize performance over efficiency.</p>
+      </div>
+    </div>
+    <!-- Controls -->
+    <div class="controls">
+        <button class="nav-button active" slide="1">Fuel Type</button>
+        <button class="nav-button" slide="2">Engine Cylinders</button>
+        <button class="nav-button" slide="3">Car Brand</button>
+    </div>
+</div>
+<script>
+let data =[];
+// Load data from external CSV
+async function loadData() {
+  console.log('Loading data from CSV...');
+  try {
+    const rawData = await d3.csv("https://flunky.github.io/cars2017.csv");
+    console.log('Raw data loaded:', rawData.length, 'rows');
+    // Parse and transform the data
+    data = rawData.map(d => ({
+        make: d.Make,
+        fuel: d.Fuel,
+        cylinders: +d.EngineCylinders,
+        highwayMPG: +d.AverageHighwayMPG,
+        cityMPG: +d.AverageCityMPG,
+        combinedMPG: (+d.AverageHighwayMPG + +d.AverageCityMPG) / 2
+    }));
+    console.log('Data processed:', data.length, 'rows');
+  createChart1();
+  } catch (error) {
+    console.error('Error loading data:', error);
+    return
+  }
+}
+// Slide controls
+function setupEventListeners() {
+    document.querySelectorAll('.nav-button').forEach((button, index) => {
+        button.addEventListener('click', () => {
+            this.goToSlide(index);
+        });
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') this.goToSlide(this.currentSlide - 1);
+        if (e.key === 'ArrowRight') this.goToSlide(this.currentSlide + 1);
+    });
+}
+function goToSlide(slideIndex) {
+    if (slideIndex < 0 || slideIndex >= this.totalSlides) return;
+    // Hide current slide
+    document.querySelectorAll('.slide').forEach(slide => {
+        slide.classList.remove('active');
+    });
+    // Show new slide
+    document.querySelectorAll('.slide')[slideIndex].classList.add('active');
+    // Update navigation buttons
+    document.querySelectorAll('.nav-button').forEach((button, index) => {
+        button.classList.toggle('active', index === slideIndex);
+    });
+    this.currentSlide = slideIndex;
+}
+// Chart 1: Fuel Type Comparison
+function createChart1() {
+   // Process data using the structure you provided
+    const fuelData = d3.group(data, d => d.fuel);
+    console.log('Fuel data:', fuelData);
+    const fuelStats = Array.from(fuelData, ([fuel, cars]) => ({
+        fuel: fuel,
+        avgHighway: d3.mean(cars, d => d.highwayMPG),
+        avgCity: d3.mean(cars, d => d.cityMPG),
+        count: cars.length,
+        // Additional useful stats
+        minCity: d3.min(cars, d => d.cityMPG),
+        maxCity: d3.max(cars, d => d.cityMPG),
+        minHighway: d3.min(cars, d => d.highwayMPG),
+        maxHighway: d3.max(cars, d => d.highwayMPG)
+    }));
+    console.log('Fuel statistics:', fuelStats);
+    // Sort by average of city and highway MPG
+    fuelStats.sort((a, b) => ((b.avgCity + b.avgHighway) / 2) - ((a.avgCity + a.avgHighway) / 2));
+    // Chart dimensions
+    const margin = { top: 20, right: 30, bottom: 80, left: 70 };
+    const width = 900 - margin.left - margin.right;
+    const height = 500 - margin.bottom - margin.top;
+    // Create SVG
+    const svg = d3.select('#chart1')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom);
+    const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+    // Scales
+    const x0Scale = d3.scaleBand()
+        .domain(fuelStats.map(d => d.fuel))
+        .range([0, width])
+        .padding(0.2);
+    const x1Scale = d3.scaleBand()
+        .domain(['city', 'highway'])
+        .range([0, x0Scale.bandwidth()])
+        .padding(0.05);
+    const yScale = d3.scaleLinear()
+        .domain([0, d3.max(fuelStats, d => Math.max(d.avgCity, d.avgHighway)) * 1.1])
+        .range([height, 0]);
+    const colorScale = d3.scaleOrdinal()
+        .domain(["city", "highway"])
+        .range(['#e74c3c', '#3498db']);
+     const legend = d3.legendColor()
+        .scale(colorScale);
+    // Add grid lines
+    g.selectAll('.grid-line')
+        .data(yScale.ticks(8))
+        .enter()
+        .append('line')
+        .attr('class', 'grid-line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', d => yScale(d))
+        .attr('y2', d => yScale(d));
+    // Create tooltip
+    const tooltip = d3.select('#tooltip');
+    // Create fuel type groups
+    const fuelGroups = g.selectAll('.fuel-group')
+        .data(fuelStats)
+        .enter()
+        .append('g')
+        .attr('class', 'fuel-group')
+        .attr('transform', d => `translate(${x0Scale(d.fuel)}, 0)`);
+    // Add city MPG bars
+    fuelGroups.selectAll('.city-bar')
+        .data(d => [d])
+        .enter()
+        .append('rect')
+        .attr('class', 'bar city-bar')
+        .attr('x', x1Scale('city'))
+        .attr('width', x1Scale.bandwidth())
+        .attr('y', height)
+        .attr('height', 0)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr("fill", '#e74c3c')
+        .on('mouseover', function(event, d) {
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', 1);
+            tooltip.html(`
+                <strong>${d.fuel} - City MPG</strong><br/>
+                Average: <strong>${d.avgCity.toFixed(1)}</strong><br/>
+                Range: ${d.minCity.toFixed(1)} - ${d.maxCity.toFixed(1)}<br/>
+                Records: ${d.count}
+            `)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100)
+        .attr('y', d => yScale(d.avgCity))
+        .attr('height', d => height - yScale(d.avgCity));
+    // Add highway MPG bars
+    fuelGroups.selectAll('.highway-bar')
+        .data(d => [d])
+        .enter()
+        .append('rect')
+        .attr('class', 'bar highway-bar')
+        .attr('x', x1Scale('highway'))
+        .attr('width', x1Scale.bandwidth())
+        .attr('y', height)
+        .attr('height', 0)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr("fill", '#3498db')
+        .on('mouseover', function(event, d) {
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', 1);
+            tooltip.html(`
+                <strong>${d.fuel} - Highway MPG</strong><br/>
+                Average: <strong>${d.avgHighway.toFixed(1)}</strong><br/>
+                Range: ${d.minHighway.toFixed(1)} - ${d.maxHighway.toFixed(1)}<br/>
+                Records: ${d.count}
+            `)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100 + 50)
+        .attr('y', d => yScale(d.avgHighway))
+        .attr('height', d => height - yScale(d.avgHighway));
+    // Add value labels on city bars
+    fuelGroups.selectAll('.city-label')
+        .data(d => [d])
+        .enter()
+        .append('text')
+        .attr('class', 'bar-label city-label')
+        .attr('x', x1Scale('city') + x1Scale.bandwidth() / 2)
+        .attr('y', d => yScale(d.avgCity) - 5)
+        .attr('text-anchor', 'middle')
+        .style('opacity', 0)
+        .text(d => d.avgCity.toFixed(1))
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100 + 500)
+        .style('opacity', 1);
+    // Add value labels on highway bars
+    fuelGroups.selectAll('.highway-label')
+        .data(d => [d])
+        .enter()
+        .append('text')
+        .attr('class', 'bar-label highway-label')
+        .attr('x', x1Scale('highway') + x1Scale.bandwidth() / 2)
+        .attr('y', d => yScale(d.avgHighway) - 5)
+        .attr('text-anchor', 'middle')
+        .style('opacity', 0)
+        .text(d => d.avgHighway.toFixed(1))
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100 + 550)
+        .style('opacity', 1);
+    // Add axes
+    g.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(x0Scale))
+        .selectAll('text')
+        .style('font-size', '12px')
+        .style('font-weight', '500')
+        .attr('transform', 'rotate(-15)')
+        .style('text-anchor', 'end');
+    g.append('g')
+        .attr('class', 'axis')
+        .call(d3.axisLeft(yScale));
+    // Add axis labels
+    g.append('text')
+        .attr('class', 'axis-label')
+        .attr('transform', 'rotate(-90)')
+        .attr('y', 0 - margin.left)
+        .attr('x', 0 - (height / 2))
+        .attr('dy', '1em')
+        .style('text-anchor', 'middle')
+        .text('Average MPG');
+    g.append('text')
+        .attr('class', 'axis-label')
+        .attr('transform', `translate(${width / 2}, ${height + margin.bottom - 10})`)
+        .style('text-anchor', 'middle')
+        .text('Fuel Type');
+    svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${width - margin.right*2}, 20)`) // Adjust position as needed
+        .call(legend);
+}
+// Wait for DOM and D3 to be ready
+document.addEventListener('DOMContentLoaded', function() {
+  loadData();
+});
+</script>
+</body>
+</html>
+
