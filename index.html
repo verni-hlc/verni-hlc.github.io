@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html>
   <style>
+    :root {
+      --blue: #667eea;
+      --red: #ea6666;
+      --lightblue: #9aa8e6;
+      --green: #66ea92;
+      --pink: #ea6690;
+      --orange: #667eea;
+      --grey: #898989;
+      --white:  #ffffff;
+    }
     .header{
         font-family: "Verdana", sans-serif;
     }
@@ -8,14 +18,13 @@
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             backdrop-filter: blur(10px);
             max-width: 1000px;
             margin: 0 auto;
             font-family: "Verdana", sans-serif;
         }
     .axis {
-        color: black;
+        color: var(--grey);
     }
     .content {
         max-width: 900px;
@@ -37,7 +46,7 @@
         color: #000000;
     }
     .insight-box {
-        background: linear-gradient(135deg, #74b9ff, #0984e3);
+        background: linear-gradient(145deg, var(--blue), var(--lightblue));
         color: white;
         padding: 20px;
         border-radius: 10px;
@@ -89,8 +98,8 @@
     }
     .nav-button:hover {
         background: #f8f9fa;
-        border-color: #667eea;
-        color: #667eea;
+        border-color: var(--blue);
+        color: var(--blue);
         transform: translateY(-1px);
     }
     .nav-button.active {
@@ -171,11 +180,11 @@
                 <!-- Legend for Chart 1 -->
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <div class="legend-color" style="background-color: var(--red);"></div>
                         <span>City MPG</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <div class="legend-color" style="background-color: var(--blue);"></div>
                         <span>Highway MPG</span>
                     </div>
                 </div>
@@ -202,11 +211,11 @@
                 <!-- Legend for Chart 2 -->
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <div class="legend-color" style="background-color: var(--red);"></div>
                         <span>City MPG</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <div class="legend-color" style="background-color: var(--blue);"></div>
                         <span>Highway MPG</span>
                     </div>
                 </div>
@@ -233,15 +242,15 @@
                 <!-- Legend for Chart 3 -->
                 <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #2ecc71;"></div>
+                        <div class="legend-color" style="background-color: var(--green);"></div>
                         <span>Electric</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <div class="legend-color" style="background-color: var(--blue);"></div>
                         <span>Gasoline</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #9b59b6;"></div>
+                        <div class="legend-color" style="background-color: var(--pink);"></div>
                         <span>Mixed</span>
                     </div>
                 </div>
@@ -267,34 +276,40 @@
 
         <!-- D3 script -->
         <script>
-            let data =[];
-            let currentSlide = 0;
-            const totalSlides = 3;
+            // Declare global variables
+            let data = [];
+            let currentSlide = 0; // Start with chart 1
+            const totalSlides = 3; // There are 3 charts total
+            const rootStyles = getComputedStyle(document.documentElement);
 
             // Load data from external CSV
             async function loadData() {
-              console.log('Loading data from CSV...');
-              try {
-                const rawData = await d3.csv("https://flunky.github.io/cars2017.csv");
-                console.log('Raw data loaded:', rawData.length, 'rows');
-                // Parse and transform the data
-                data = rawData.map(d => ({
-                    make: d.Make,
-                    fuel: d.Fuel,
-                    cylinders: +d.EngineCylinders,
-                    highwayMPG: +d.AverageHighwayMPG,
-                    cityMPG: +d.AverageCityMPG,
-                    combinedMPG: (+d.AverageHighwayMPG + +d.AverageCityMPG) / 2
-                }));
-                console.log('Data processed:', data.length, 'rows');
-              createChart1();
-              createChart2();
-              createChart3();
-              } catch (error) {
-                console.error('Error loading data:', error);
-                return
-              }
+                console.log('Loading data from CSV...');
+                try {
+                    const rawData = await d3.csv("https://flunky.github.io/cars2017.csv");
+                    console.log('Raw data loaded:', rawData.length, 'rows');
+                    // Parse and transform the data
+                    data = rawData.map(d => ({
+                        make: d.Make,
+                        fuel: d.Fuel,
+                        cylinders: +d.EngineCylinders,
+                        highwayMPG: +d.AverageHighwayMPG,
+                        cityMPG: +d.AverageCityMPG,
+                        combinedMPG: (+d.AverageHighwayMPG + +d.AverageCityMPG) / 2
+                    }));
+                    console.log('Data processed:', data.length, 'rows');
+
+                    // Create the charts now that data has loaded
+                    createChart1();
+                    createChart2();
+                    createChart3();
+                    setupEventListeners();
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    return
+                }
             }
+
             // Slide controls
             function setupEventListeners() {
                 document.querySelectorAll('.nav-button').forEach((button, index) => {
@@ -302,11 +317,9 @@
                         goToSlide(index);
                     });
                 });
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft') this.goToSlide(this.currentSlide - 1);
-                    if (e.key === 'ArrowRight') this.goToSlide(this.currentSlide + 1);
-                });
             }
+
+            // Handles slide transition
             function goToSlide(slideIndex) {
                 if (slideIndex < 0 || slideIndex >= totalSlides) return;
                 
@@ -325,41 +338,47 @@
                 
                 currentSlide = slideIndex;
             }
+
             // Chart 1: Fuel Type Comparison
             function createChart1() {
-               // Process data using the structure you provided
+                // Grouping data by fuel type
                 const fuelData = d3.group(data, d => d.fuel);
-                console.log('Fuel data:', fuelData);
+
+                // Creating new data array form grouped metrics
                 const fuelStats = Array.from(fuelData, ([fuel, cars]) => ({
                     fuel: fuel,
                     avgHighway: d3.mean(cars, d => d.highwayMPG),
                     avgCity: d3.mean(cars, d => d.cityMPG),
                     count: cars.length,
+
                     // Additional useful stats
                     minCity: d3.min(cars, d => d.cityMPG),
                     maxCity: d3.max(cars, d => d.cityMPG),
                     minHighway: d3.min(cars, d => d.highwayMPG),
                     maxHighway: d3.max(cars, d => d.highwayMPG)
                 }));
-                console.log('Fuel statistics:', fuelStats);
+
                 // Sort by average of city and highway MPG
                 fuelStats.sort((a, b) => ((b.avgCity + b.avgHighway) / 2) - ((a.avgCity + a.avgHighway) / 2));
+
                 // Chart dimensions
                 const margin = { top: 20, right: 30, bottom: 80, left: 70 };
                 const width = 900 - margin.left - margin.right;
                 const height = 500 - margin.bottom - margin.top;
+
                 // Create SVG
                 const svg = d3.select('#chart1')
                     .attr('width', width + margin.left + margin.right)
                     .attr('height', height + margin.top + margin.bottom);
                 const g = svg.append('g')
                     .attr('transform', `translate(${margin.left},${margin.top})`);
+                
                 // Scales
-                const x0Scale = d3.scaleBand()
+                const x0Scale = d3.scaleBand() // Scale for fuel type
                     .domain(fuelStats.map(d => d.fuel))
                     .range([0, width])
                     .padding(0.2);
-                const x1Scale = d3.scaleBand()
+                const x1Scale = d3.scaleBand() // Scale for mpg type
                     .domain(['city', 'highway'])
                     .range([0, x0Scale.bandwidth()])
                     .padding(0.05);
@@ -370,16 +389,17 @@
                 // Create tooltip
                 const tooltip = d3.select("#tooltip");
                 
-                // Add grid lines
-                g.selectAll('.grid-line')
+                // Add tick marks
+                g.selectAll('.tick-marks')
                     .data(yScale.ticks(8))
                     .enter()
                     .append('line')
-                    .attr('class', 'grid-line')
+                    .attr('class', 'tick-marks')
                     .attr('x1', 0)
                     .attr('x2', width)
                     .attr('y1', d => yScale(d))
                     .attr('y2', d => yScale(d));
+
                 // Create fuel type groups
                 const fuelGroups = g.selectAll('.fuel-group')
                     .data(fuelStats)
@@ -387,6 +407,7 @@
                     .append('g')
                     .attr('class', 'fuel-group')
                     .attr('transform', d => `translate(${x0Scale(d.fuel)}, 0)`);
+                
                 // Add city MPG bars
                 fuelGroups.selectAll('.city-bar')
                     .data(d => [d])
@@ -399,7 +420,7 @@
                     .attr('height', 0)
                     .attr('rx', 3)
                     .attr('ry', 3)
-                    .attr("fill", '#e74c3c')
+                    .attr("fill", rootStyles.getPropertyValue('--red'))
                     .on('mouseover', function(event, d) {
                         tooltip.transition()
                             .duration(200)
@@ -423,6 +444,7 @@
                     .delay((d, i) => i * 100)
                     .attr('y', d => yScale(d.avgCity))
                     .attr('height', d => height - yScale(d.avgCity));
+                
                 // Add highway MPG bars
                 fuelGroups.selectAll('.highway-bar')
                     .data(d => [d])
@@ -435,7 +457,7 @@
                     .attr('height', 0)
                     .attr('rx', 3)
                     .attr('ry', 3)
-                    .attr("fill", '#3498db')
+                    .attr("fill", rootStyles.getPropertyValue('--blue'))
                     .on('mouseover', function(event, d) {
                         tooltip.transition()
                             .duration(200)
@@ -459,6 +481,7 @@
                     .delay((d, i) => i * 100 + 50)
                     .attr('y', d => yScale(d.avgHighway))
                     .attr('height', d => height - yScale(d.avgHighway));
+                
                 // Add value labels on city bars
                 fuelGroups.selectAll('.city-label')
                     .data(d => [d])
@@ -468,12 +491,15 @@
                     .attr('x', x1Scale('city') + x1Scale.bandwidth() / 2)
                     .attr('y', d => yScale(d.avgCity) - 5)
                     .attr('text-anchor', 'middle')
+                    .style('fill', rootStyles.getPropertyValue('--grey'))
+                    .style('font-size', 12)
                     .style('opacity', 0)
                     .text(d => d.avgCity.toFixed(1))
                     .transition()
                     .duration(1000)
                     .delay((d, i) => i * 100 + 500)
                     .style('opacity', 1);
+                
                 // Add value labels on highway bars
                 fuelGroups.selectAll('.highway-label')
                     .data(d => [d])
@@ -483,12 +509,15 @@
                     .attr('x', x1Scale('highway') + x1Scale.bandwidth() / 2)
                     .attr('y', d => yScale(d.avgHighway) - 5)
                     .attr('text-anchor', 'middle')
+                    .style('fill', rootStyles.getPropertyValue('--grey'))
+                    .style('font-size', 12)
                     .style('opacity', 0)
                     .text(d => d.avgHighway.toFixed(1))
                     .transition()
                     .duration(1000)
-                    .delay((d, i) => i * 100 + 550)
+                    .delay((d, i) => i * 100 + 500)
                     .style('opacity', 1);
+                
                 // Add axes
                 g.append('g')
                     .attr('class', 'axis')
@@ -499,9 +528,11 @@
                     .style('font-weight', '500')
                     .attr('transform', 'rotate(-15)')
                     .style('text-anchor', 'end');
+                
                 g.append('g')
                     .attr('class', 'axis')
                     .call(d3.axisLeft(yScale));
+                
                 // Add axis labels
                 g.append('text')
                     .attr('class', 'axis-label')
@@ -510,14 +541,17 @@
                     .attr('x', 0 - (height / 2))
                     .attr('dy', '1em')
                     .style('text-anchor', 'middle')
+                    .style('fill', rootStyles.getPropertyValue('--grey'))
                     .text('Average Miles Per Gallon (MPG)');
+                
                 g.append('text')
                     .attr('class', 'axis-label')
                     .attr('transform', `translate(${width / 2}, ${height + margin.bottom - 10})`)
                     .style('text-anchor', 'middle')
+                    .style('fill', rootStyles.getPropertyValue('--grey'))
                     .text('Fuel Type');
 
-                // Features of the annotation
+                // Create annotation
                 const annotations = [
                     {
                         note: {
@@ -531,12 +565,25 @@
                     }
                 ]
 
-                // Add annotation to the chart
                 const makeAnnotations = d3.annotation()
-                .annotations(annotations)
-                d3.select("#chart1")
-                .append("g")
-                .call(makeAnnotations)
+                    .annotations(annotations);
+
+                // Add annotation group to the chart with initial hidden state
+                const annotationGroup = d3.select("#chart1")
+                    .append("g")
+                    .attr("class", "annotation-group")
+                    .style("opacity", 0) 
+                    .call(makeAnnotations);
+
+
+                // Animate the annotation appearance
+                annotationGroup
+                    .transition()
+                    .duration(1000)        
+                    .delay(1500)          
+                    .style("opacity", 1)
+                    .ease(d3.easeBackOut);
+
             }
 
             // Chart 2: Cylinders vs Efficiency Scatter Plot
@@ -574,7 +621,8 @@
                     .tickFormat("")
                 )
                 .selectAll("line")
-                .attr("class", "grid-line");
+                .attr("class", "grid-line")
+                .style("stroke-dasharray", ("3, 3"));
 
               g.append("g")
                 .attr("class", "grid")
@@ -583,7 +631,8 @@
                     .tickFormat("")
                 )
                 .selectAll("line")
-                .attr("class", "grid-line");
+                .attr("class", "grid-line")
+                .style("stroke-dasharray", ("3, 3"));
                   
               // Add axes
               g.append("g")
@@ -600,6 +649,7 @@
                   .attr("class", "axis-label")
                   .attr("transform", `translate(${width/2}, ${height + 40})`)
                   .style("text-anchor", "middle")
+                  .style("fill", rootStyles.getPropertyValue('--grey'))
                   .text("Engine Cylinders");
 
               g.append("text")
@@ -608,6 +658,7 @@
                   .attr("y", 0 - margin.left + 15)
                   .attr("x", 0 - (height / 2))
                   .style("text-anchor", "middle")
+                  .style("fill", rootStyles.getPropertyValue('--grey'))
                   .text("Miles Per Gallon (MPG)");
                 
               // Add highway MPG points
@@ -619,7 +670,7 @@
                   .attr("cx", d => xScale(d.cylinders))
                   .attr("cy", d => yScale(d.highwayMPG))
                   .attr("r", 5)
-                  .attr("fill", "#3498db")
+                  .attr("fill", rootStyles.getPropertyValue('--blue'))
                   .attr("opacity", 0.7)
                   .attr("stroke", "white")
                   .attr("stroke-width", 1);
@@ -633,7 +684,7 @@
                   .attr("cx", d => xScale(d.cylinders))
                   .attr("cy", d => yScale(d.cityMPG))
                   .attr("r", 5)
-                  .attr("fill", "#e74c3c")
+                  .attr("fill", rootStyles.getPropertyValue('--red'))
                   .attr("opacity", 0.7)
                   .attr("stroke", "white")
                   .attr("stroke-width", 1);
@@ -672,18 +723,50 @@
                       d3.select(this).transition().duration(200).attr("r", 5).attr("opacity", 0.7);
                       tooltip.style("opacity", 0);
                   });
+
+                // Create annotation
+                const annotations = [
+                    {
+                        note: {
+                            label: "As number of cylinders increase, fuel efficiency decreases"
+                        },
+                        x: 300,
+                        y: 300,
+                        dx: 100,
+                        dy: -100
+                    }
+                ]
+
+                const makeAnnotations = d3.annotation()
+                    .annotations(annotations);
+
+                // Add annotation group to the chart with initial hidden state
+                const annotationGroup = d3.select("#chart2")
+                    .append("g")
+                    .attr("class", "annotation-group")
+                    .style("opacity", 0) 
+                    .call(makeAnnotations);
+
+
+                // Animate the annotation appearance
+                annotationGroup
+                    .transition()
+                    .duration(1000)        
+                    .delay(1500)          
+                    .style("opacity", 1)
+                    .ease(d3.easeBackOut);
             }
 
             function createChart3(){
-              const brandData = {};
-              data.forEach(row => {
-                  const brand = row.make;
-                  const highwayMPG = row.highwayMPG;
-                  const cityMPG = row.cityMPG;
-                  const combinedMPG = row.combinedMPG;
-                  const fuel = row.fuel;
+                const brandData = {};
+                data.forEach(row => {
+                    const brand = row.make;
+                    const highwayMPG = row.highwayMPG;
+                    const cityMPG = row.cityMPG;
+                    const combinedMPG = row.combinedMPG;
+                    const fuel = row.fuel;
 
-                  if (!brandData[brand]) {
+                    if (!brandData[brand]) {
                       brandData[brand] = {
                           brand: brand,
                           totalCombinedMPG: 0,
@@ -693,92 +776,95 @@
                           cityMPGs: [],
                           highwayMPGs: []
                       };
-                  }
-                  
-                  brandData[brand].totalCombinedMPG += combinedMPG;
-                  brandData[brand].count += 1;
-                  brandData[brand].cityMPGs.push(cityMPG);
-                  brandData[brand].highwayMPGs.push(highwayMPG);
-                  
-                  if (!brandData[brand].fuelTypes[fuel]) {
-                      brandData[brand].fuelTypes[fuel] = 0;
-                      brandData[brand].fuelTypesList.push(fuel);
-                  }
-                  brandData[brand].fuelTypes[fuel]++;
-              });
-              
-              // Calculate averages and determine predominant fuel type
-              const processedData = Object.values(brandData).map(d => {
-                  const avgCombinedMPG = d.totalCombinedMPG / d.count;
-                  const avgCityMPG = d.cityMPGs.reduce((a, b) => a + b, 0) / d.cityMPGs.length;
-                  const avgHighwayMPG = d.highwayMPGs.reduce((a, b) => a + b, 0) / d.highwayMPGs.length;
-                  
-                  // Determine predominant fuel type
-                  let predominantFuel = 'Mixed';
-                  let maxCount = 0;
-                  const fuelTypeCount = Object.keys(d.fuelTypes).length;
-                  
-                  if (fuelTypeCount === 1) {
-                      predominantFuel = Object.keys(d.fuelTypes)[0];
-                  } else {
-                      for (const [fuel, count] of Object.entries(d.fuelTypes)) {
-                          if (count > maxCount) {
-                              maxCount = count;
-                              predominantFuel = fuel;
-                          }
-                      }
-                      if (fuelTypeCount > 1) predominantFuel = 'Mixed';
-                  }
-                  
-                  return {
-                      brand: d.brand,
-                      avgCombinedMPG: avgCombinedMPG,
-                      avgCityMPG: avgCityMPG,
-                      avgHighwayMPG: avgHighwayMPG,
-                      predominantFuel: predominantFuel,
-                      modelCount: d.count,
-                      fuelTypes: d.fuelTypes,
-                      fuelTypesList: d.fuelTypesList
-                  };
-              });
-              
-              // Color scheme for different fuel types
-              const fuelColors = {
-                  'Gasoline': '#3498db',
-                  'Diesel': '#e67e22', 
-                  'Electricity': '#2ecc71',
-                  'Mixed': '#9b59b6'
-              };
-                    
-              // Sort by combined MPG (descending)
-              processedData.sort((a, b) => b.avgCombinedMPG - a.avgCombinedMPG);
+                    }
 
-              // Chart dimensions
-              const margin = { top: 20, right: 80, bottom: 40, left: 120 };
-              const width = 900 - margin.left - margin.right;
-              const height = processedData.length * 25 + margin.top + margin.bottom;
-              // Create SVG
-              const svg = d3.select('#chart3')
+                    brandData[brand].totalCombinedMPG += combinedMPG;
+                    brandData[brand].count += 1;
+                    brandData[brand].cityMPGs.push(cityMPG);
+                    brandData[brand].highwayMPGs.push(highwayMPG);
+
+                    if (!brandData[brand].fuelTypes[fuel]) {
+                        brandData[brand].fuelTypes[fuel] = 0;
+                        brandData[brand].fuelTypesList.push(fuel);
+                    }
+
+                    brandData[brand].fuelTypes[fuel]++;
+                });
+
+                // Calculate averages and determine predominant fuel type
+                const processedData = Object.values(brandData).map(d => {
+                    const avgCombinedMPG = d.totalCombinedMPG / d.count;
+                    const avgCityMPG = d.cityMPGs.reduce((a, b) => a + b, 0) / d.cityMPGs.length;
+                    const avgHighwayMPG = d.highwayMPGs.reduce((a, b) => a + b, 0) / d.highwayMPGs.length;
+
+                    // Determine predominant fuel type
+                    let predominantFuel = 'Mixed';
+                    let maxCount = 0;
+                    const fuelTypeCount = Object.keys(d.fuelTypes).length;
+
+                    if (fuelTypeCount === 1) {
+                        predominantFuel = Object.keys(d.fuelTypes)[0];
+                    }
+                    else {
+                        for (const [fuel, count] of Object.entries(d.fuelTypes)) {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                predominantFuel = fuel;
+                            }
+                        }
+                        if (fuelTypeCount > 1) predominantFuel = 'Mixed';
+                    }
+
+                    return {
+                        brand: d.brand,
+                        avgCombinedMPG: avgCombinedMPG,
+                        avgCityMPG: avgCityMPG,
+                        avgHighwayMPG: avgHighwayMPG,
+                        predominantFuel: predominantFuel,
+                        modelCount: d.count,
+                        fuelTypes: d.fuelTypes,
+                        fuelTypesList: d.fuelTypesList
+                    };
+                });
+
+                // Color scheme for different fuel types
+                const fuelColors = {
+                    'Gasoline': rootStyles.getPropertyValue('--blue'),
+                    'Diesel': rootStyles.getPropertyValue('--orange'),
+                    'Electricity': rootStyles.getPropertyValue('--green'),
+                    'Mixed': rootStyles.getPropertyValue('--pink')
+                };
+                    
+                // Sort by combined MPG (descending)
+                processedData.sort((a, b) => b.avgCombinedMPG - a.avgCombinedMPG);
+
+                // Chart dimensions
+                const margin = { top: 20, right: 80, bottom: 40, left: 120 };
+                const width = 900 - margin.left - margin.right;
+                const height = processedData.length * 25 + margin.top + margin.bottom;
+                
+                // Create SVG
+                const svg = d3.select('#chart3')
                   .attr('width', width + margin.left + margin.right)
                   .attr('height', height + margin.top + margin.bottom);
-              const g = svg.append('g')
+                const g = svg.append('g')
                   .attr('transform', `translate(${margin.left},${margin.top})`);
-                
-              // Create scales
-              const xScale = d3.scaleLinear()
+
+                // Create scales
+                const xScale = d3.scaleLinear()
                   .domain([0, d3.max(processedData, d => d.avgCombinedMPG) * 1.1])
                   .range([0, width]);
 
-              const yScale = d3.scaleBand()
+                const yScale = d3.scaleBand()
                   .domain(processedData.map(d => d.brand))
                   .range([0, height - margin.top - margin.bottom])
                   .padding(0.1);
 
-              // Create tooltip
-              const tooltip = d3.select("#tooltip");
+                // Create tooltip
+                const tooltip = d3.select("#tooltip");
 
-              // Draw bars
-              const bars = g.selectAll(".bar")
+                // Draw bars
+                const bars = g.selectAll(".bar")
                   .data(processedData)
                   .enter().append("rect")
                   .attr("class", "bar")
@@ -790,15 +876,15 @@
                   .attr("rx", 4)
                   .attr("ry", 4);
 
-              // Animate bars
-              bars.transition()
+                // Animate bars
+                bars.transition()
                   .duration(1000)
                   .delay((d, i) => i * 50)
                   .attr("width", d => xScale(d.avgCombinedMPG));
 
 
-              // Add value labels on bars
-              const valueLabels = g.selectAll(".value-label")
+                // Add value labels on bars
+                const valueLabels = g.selectAll(".value-label")
                   .data(processedData)
                   .enter().append("text")
                   .attr("class", "value-label")
@@ -808,14 +894,15 @@
                   .text(d => d.avgCombinedMPG.toFixed(1))
                   .style("opacity", 0);
 
-              // Animate value labels
-              valueLabels.transition()
+                // Animate value labels
+                valueLabels.transition()
                   .duration(1000)
                   .delay((d, i) => i * 50 + 500)
-                  .style("opacity", 1);
+                  .style("opacity", 1)
+                  .attr("fill", rootStyles.getPropertyValue('--white'));
 
-              // Add brand labels
-              g.selectAll(".bar-label")
+                // Add brand labels
+                g.selectAll(".bar-label")
                   .data(processedData)
                   .enter().append("text")
                   .attr("class", "bar-label")
@@ -823,10 +910,11 @@
                   .attr("y", d => yScale(d.brand) + yScale.bandwidth() / 2)
                   .attr("dy", "0.35em")
                   .style("text-anchor", "end")
+                  .attr("fill", rootStyles.getPropertyValue('--grey'))
                   .text(d => d.brand);
 
-              // Add hover effects
-              bars.on("mouseover", function(event, d) {
+                // Add hover effects
+                bars.on("mouseover", function(event, d) {
                       d3.select(this).style("filter", "brightness(1.1)");
                       
                       // Create fuel type breakdown for mixed brands
@@ -855,24 +943,22 @@
                       tooltip.style("opacity", 0);
                   });
 
-              // Add X axis
-              g.append("g")
+                // Add X axis
+                g.append("g")
                   .attr("class", "axis")
                   .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
                   .call(d3.axisBottom(xScale).ticks(8));
 
-              // Add X axis label
-              g.append("text")
+                // Add X axis label
+                g.append("text")
                   .attr("class", "axis-label")
                   .attr("transform", `translate(${width / 2}, ${height - margin.top - margin.bottom + 35})`)
                   .style("text-anchor", "middle")
+                  .attr("fill", rootStyles.getPropertyValue('--grey'))
                   .text("Average Combined MPG (Highway & City)");
+
+
             }
-            // Wait for DOM and D3 to be ready
-            document.addEventListener('DOMContentLoaded', function() {
-              loadData();
-              setupEventListeners();
-            });
         </script>
     </body>
 </html>
