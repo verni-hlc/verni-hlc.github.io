@@ -20,7 +20,7 @@
             border-radius: 10px;
             padding: 20px;
             backdrop-filter: blur(10px);
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             font-family: "Verdana", sans-serif;
         }
@@ -28,7 +28,7 @@
         color: var(--grey);
     }
     .content {
-        max-width: 900px;
+        max-width: 1200px;
         margin: 0 auto;
         background: white;
         padding: 20px;
@@ -108,22 +108,6 @@
         border-color: #667eea;
         color: white;
         transform: translateY(-1px);
-    }
-    .slide-indicators {
-        display: flex;
-        gap: 8px;
-    }
-    .indicator {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #dee2e6;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    .indicator.active {
-        background: #667eea;
-        transform: scale(1.2);
     }
     .legend {
         display: flex;
@@ -259,7 +243,7 @@
                 <!-- Key Insight for Chart 3 -->
                 <div class="insight-box">
                     <h3>Key Insight</h3>
-                    <p>Tesla leads with pure electric efficiency, while traditional manufacturers like Honda and Toyota excel with hybrid technology and efficient gasoline engines. Luxury brands typically prioritize performance over efficiency.</p>
+                    <p>Scaled average of brands indicates fuel efficiency across all brand models. Tesla has the highest average MPG, however it only has one model. With the scaled average, the more efficient a brand is across all of their models, the higher the ranking. Here, we see BMW has 9 models that are all fairly efficient to give them the top score.</p>
                 </div>
             </div>
 
@@ -338,6 +322,7 @@
                 });
                 
                 currentSlide = slideIndex;
+              
             }
 
             // Chart 1: Fuel Type Comparison
@@ -589,12 +574,12 @@
 
             // Chart 2: Cylinders vs Efficiency Scatter Plot
             function createChart2() {
-              d3.select("#chart2").selectAll("*").remove();
-                
+       
               // Chart dimensions
               const margin = { top: 20, right: 30, bottom: 80, left: 70 };
               const width = 900 - margin.left - margin.right;
               const height = 500 - margin.bottom - margin.top;
+
               // Create SVG
               const svg = d3.select('#chart2')
                   .attr('width', width + margin.left + margin.right)
@@ -872,7 +857,7 @@
                   .data(processedData)
                   .enter().append("rect")
                   .attr("class", "bar")
-                  .attr("x", 0)
+                  .attr("x", 70)
                   .attr("y", d => yScale(d.brand))
                   .attr("width", 0)
                   .attr("height", yScale.bandwidth())
@@ -892,7 +877,7 @@
                   .data(processedData)
                   .enter().append("text")
                   .attr("class", "value-label")
-                  .attr("x", d => xScale(d.scaledAvgCombinedMPG) + 5)
+                  .attr("x", d => xScale(d.scaledAvgCombinedMPG) + 75)
                   .attr("y", d => yScale(d.brand) + yScale.bandwidth() / 2)
                   .attr("dy", "0.35em")
                   .text(d => d.scaledAvgCombinedMPG.toFixed(1))
@@ -911,7 +896,7 @@
                   .data(processedData)
                   .enter().append("text")
                   .attr("class", "bar-label")
-                  .attr("x", -10)
+                  .attr("x", 60)
                   .attr("y", d => yScale(d.brand) + yScale.bandwidth() / 2)
                   .attr("dy", "0.35em")
                   .style("text-anchor", "end")
@@ -951,7 +936,7 @@
                 // Add X axis
                 g.append("g")
                   .attr("class", "axis")
-                  .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+                  .attr("transform", `translate(70,${height - margin.top - margin.bottom})`)
                   .call(d3.axisBottom(xScale).ticks(8));
 
                 // Add X axis label
@@ -966,18 +951,18 @@
                 const annotations = [
                     {
                         note: {
-                            label: "Despite Tesla's overwhelming display of fuel efficiency, that metric only comes from one model.\nThis chart shows fuel efficiency multiplied by the number of models each brand makes.\nThis helps level the playing field.",
-                            wrap: 100,
-                            align: "middle"
+                            label: "*Note: Tesla's fuel efficiency comes from only one model",
                         },
-                        x: 180,
-                        y: 40,
-                        dx: 150,
-                        dy: 350
+                        x: 400,
+                        y: 440,
+                        dx: 80,
+                        dy: 80,
+
                     }
                 ]
 
                 const makeAnnotations = d3.annotation()
+                    .type(d3.annotationCalloutElbow)
                     .annotations(annotations);
 
                 // Add annotation group to the chart with initial hidden state
