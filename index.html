@@ -14,6 +14,9 @@
     .header{
         font-family: "Verdana", sans-serif;
     }
+    .annotation-note-label {
+        max-width: 200px;
+    }
     .chart-container {
             background: white;
             border-radius: 10px;
@@ -815,6 +818,8 @@
                         if (fuelTypeCount > 1) predominantFuel = 'Mixed';
                     }
 
+                    scaledAvgCombinedMPG = avgCombinedMPG * d.count;
+
                     return {
                         brand: d.brand,
                         avgCombinedMPG: avgCombinedMPG,
@@ -822,6 +827,7 @@
                         avgHighwayMPG: avgHighwayMPG,
                         predominantFuel: predominantFuel,
                         modelCount: d.count,
+                        scaledAvgCombinedMPG: scaledAvgCombinedMPG,
                         fuelTypes: d.fuelTypes,
                         fuelTypesList: d.fuelTypesList
                     };
@@ -836,7 +842,7 @@
                 };
                     
                 // Sort by combined MPG (descending)
-                processedData.sort((a, b) => b.avgCombinedMPG - a.avgCombinedMPG);
+                processedData.sort((a, b) => b.scaledAvgCombinedMPG - a.scaledAvgCombinedMPG);
 
                 // Chart dimensions
                 const margin = { top: 20, right: 80, bottom: 40, left: 120 };
@@ -852,7 +858,7 @@
 
                 // Create scales
                 const xScale = d3.scaleLinear()
-                  .domain([0, d3.max(processedData, d => d.avgCombinedMPG) * 1.1])
+                  .domain([0, d3.max(processedData, d => d.scaledAvgCombinedMPG) * 1.1])
                   .range([0, width]);
 
                 const yScale = d3.scaleBand()
@@ -880,7 +886,7 @@
                 bars.transition()
                   .duration(1000)
                   .delay((d, i) => i * 50)
-                  .attr("width", d => xScale(d.avgCombinedMPG));
+                  .attr("width", d => xScale(d.scaledAvgCombinedMPG));
 
 
                 // Add value labels on bars
@@ -891,7 +897,7 @@
                   .attr("x", 8)
                   .attr("y", d => yScale(d.brand) + yScale.bandwidth() / 2)
                   .attr("dy", "0.35em")
-                  .text(d => d.avgCombinedMPG.toFixed(1))
+                  .text(d => d.scaledAvgCombinedMPG.toFixed(1))
                   .style("opacity", 0);
 
                 // Animate value labels
@@ -955,8 +961,41 @@
                   .attr("transform", `translate(${width / 2}, ${height - margin.top - margin.bottom + 35})`)
                   .style("text-anchor", "middle")
                   .attr("fill", rootStyles.getPropertyValue('--grey'))
-                  .text("Average Combined MPG (Highway & City)");
+                  .text("Scaled Average Combined MPG (Average MPG * Number of Models)");
 
+                // Create annotation
+                const annotations = [
+                    {
+                        note: {
+                            label: "Despite Tesla's overwhelming display of fuel efficiency, that metric only comes from one model. \nThis chart shows fuel efficiency multiplied by the number of models each brand makes. \nThis helps level the playing field.",
+                            wrap: 100,
+                            align: "middle"
+                        },
+                        x: 180,
+                        y: 40,
+                        dx: 150,
+                        dy: 350
+                    }
+                ]
+
+                const makeAnnotations = d3.annotation()
+                    .annotations(annotations);
+
+                // Add annotation group to the chart with initial hidden state
+                const annotationGroup = d3.select("#chart3")
+                    .append("g")
+                    .attr("class", "annotation-group")
+                    .style("opacity", 0) 
+                    .call(makeAnnotations);
+
+
+                // Animate the annotation appearance
+                annotationGroup
+                    .transition()
+                    .duration(1000)        
+                    .delay(1500)          
+                    .style("opacity", 1)
+                    .ease(d3.easeBackOut);
 
             }
         </script>
