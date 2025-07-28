@@ -14,9 +14,7 @@
     .header{
         font-family: "Verdana", sans-serif;
     }
-    .annotation-note-label {
-        max-width: 200px;
-    }
+
     .chart-container {
             background: white;
             border-radius: 10px;
@@ -894,7 +892,7 @@
                   .data(processedData)
                   .enter().append("text")
                   .attr("class", "value-label")
-                  .attr("x", 8)
+                  .attr("x", d => xScale(d.scaledAvgCombinedMPG) + 5)
                   .attr("y", d => yScale(d.brand) + yScale.bandwidth() / 2)
                   .attr("dy", "0.35em")
                   .text(d => d.scaledAvgCombinedMPG.toFixed(1))
@@ -905,7 +903,8 @@
                   .duration(1000)
                   .delay((d, i) => i * 50 + 500)
                   .style("opacity", 1)
-                  .attr("fill", rootStyles.getPropertyValue('--white'));
+                  .attr("font-size", 12)
+                  .attr("fill", rootStyles.getPropertyValue('--grey'));
 
                 // Add brand labels
                 g.selectAll(".bar-label")
@@ -967,7 +966,7 @@
                 const annotations = [
                     {
                         note: {
-                            label: "Despite Tesla's overwhelming display of fuel efficiency, that metric only comes from one model. \nThis chart shows fuel efficiency multiplied by the number of models each brand makes. \nThis helps level the playing field.",
+                            label: "Despite Tesla's overwhelming display of fuel efficiency, that metric only comes from one model.\nThis chart shows fuel efficiency multiplied by the number of models each brand makes.\nThis helps level the playing field.",
                             wrap: 100,
                             align: "middle"
                         },
