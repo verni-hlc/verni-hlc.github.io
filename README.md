@@ -1,2 +1,2 @@
 # verni-hlc.github.io
-gh pages
+Narrative Visualization Project
