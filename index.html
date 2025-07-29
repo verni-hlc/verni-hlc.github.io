@@ -20,7 +20,7 @@
             border-radius: 10px;
             padding: 20px;
             backdrop-filter: blur(10px);
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             font-family: "Verdana", sans-serif;
         }
@@ -135,7 +135,7 @@
     <!-- Title, header, and description of project -->
     <title>Narrative Visualization Project</title>
     <div class="header">
-        <h1 style="text-align: center;">Car Fuel Efficiency in 2017</h1>
+        <h1 style="text-align: center;">2017 Car Fuel Efficiency Analysis</h1>
         <p style="text-align: center;">
             Exploring fuel types, engine sizes, and manufacturer fuel performance in 2017
         </p>
@@ -154,7 +154,7 @@
             <div class="slide active" id="slide1">
                 <h2 class="slide-title">Chapter 1: The Fuel Revolution</h2>
                 <p class="slide-description">
-                    While gasoline still dominates the automotive landscape, electric vehicles are making their mark with exceptional efficiency ratings. Let's explore how different fuel types perform.
+                    While gasoline is still the most prevalent car fuel type, electric vehicles (EVs) are making their mark with exceptional efficiency ratings. Let's explore how different fuel types perform.
                 </p>
                 
                 <!-- Chart 1 -->
@@ -177,7 +177,7 @@
                 <!-- Key Insight for Chart 1 -->
                 <div class="insight-box">
                     <h3>Key Insight</h3>
-                    <p>Electric vehicles show remarkably high MPG equivalent ratings, with some models exceeding 120 MPGe in city driving, demonstrating the efficiency potential of electric powertrains.</p>
+                    <p>Electric vehicles are significantly more efficient than gas or diesel cars especially for city driving. Stop-and-go traffic plays to the strengths of these vehicles, making them an appealing choice for people living in urban areas. </p>
                 </div>
             </div>
 
@@ -185,7 +185,7 @@
             <div class="slide" id="slide2">
                 <h2 class="slide-title">Chapter 2: The Cylinder Paradox</h2>
                 <p class="slide-description">
-                    More cylinders typically mean more power, but what's the trade-off with fuel efficiency? This scatter plot reveals the relationship between engine size and fuel economy.
+                    More cylinders typically mean more power, but there's a noticeable trade-off with fuel efficiency. This scatter plot reveals the relationship between cylinder number and fuel economy.
                 </p>
 
                 <!-- Chart 2 -->
@@ -208,7 +208,7 @@
                 <!-- Key Insight for Chart 2 -->
                 <div class="insight-box">
                     <h3>Key Insight</h3>
-                    <p>There's a clear inverse relationship: as cylinder count increases, fuel efficiency decreases. 4-cylinder engines offer the best balance of efficiency, while 12-cylinder luxury engines prioritize performance over economy.</p>
+                    <p>There's a clear inverse relationship between number of engine cylinders and MPG. 0-cylinder electric vehicles stand high above the other engine options in fuel efficiency, while 12-cylinder luxury engines prioritize performance over economy.</p>
                 </div>
             </div>
 
@@ -216,7 +216,7 @@
             <div class="slide" id="slide3">
                 <h2 class="slide-title">Chapter 3: Brand Performance Leaders</h2>
                 <p class="slide-description">
-                    Which manufacturers are leading the efficiency race? This ranking shows average combined MPG across all models for each brand.
+                    Which manufacturers are leading the efficiency race? This ranking shows average combined (city & highway) MPG across all models for each brand.
                 </p>
 
                 <!-- Chart 3 -->
@@ -243,7 +243,7 @@
                 <!-- Key Insight for Chart 3 -->
                 <div class="insight-box">
                     <h3>Key Insight</h3>
-                    <p>Scaled average of brands indicates fuel efficiency across all brand models. Tesla has the highest average MPG, however it only has one model. With the scaled average, the more efficient a brand is across all of their models, the higher the ranking. Here, we see BMW has 9 models that are all fairly efficient to give them the top score.</p>
+                    <p>The calculated scaled average of brands indicates fuel efficiency across all brand models. The higher the scaled average, the more efficient a brand is across all of their models and the higher the ranking. Here, we see the top 9 brands all make electric vehicles, once again highlighting the overwhelming efficiency of EVs</p>
                 </div>
             </div>
 
@@ -942,7 +942,7 @@
                 // Add X axis label
                 g.append("text")
                   .attr("class", "axis-label")
-                  .attr("transform", `translate(${width / 2}, ${height - margin.top - margin.bottom + 35})`)
+                  .attr("transform", `translate(${(width / 2) + 70}, ${height - margin.top - margin.bottom + 35})`)
                   .style("text-anchor", "middle")
                   .attr("fill", rootStyles.getPropertyValue('--grey'))
                   .text("Scaled Average Combined MPG (Average MPG * Number of Models)");
@@ -953,9 +953,9 @@
                         note: {
                             label: "*Note: Tesla's fuel efficiency comes from only one model",
                         },
-                        x: 400,
-                        y: 440,
-                        dx: 80,
+                        x: 405,
+                        y: 442,
+                        dx: 30,
                         dy: 80,
 
                     }
