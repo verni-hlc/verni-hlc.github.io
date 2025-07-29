@@ -14,6 +14,7 @@
     .header{
         font-family: "Verdana", sans-serif;
     }
+
     .chart-container {
             background: white;
             border-radius: 10px;
@@ -540,8 +541,7 @@
                 const annotations = [
                     {
                         note: {
-                            title: "Perks of Electricity",
-                            label: "Unlike diesel and gasoline, electric cars are more efficient on city roads"
+                            label: "Note: unlike diesel and gasoline, electric cars are more efficient on city roads"
                         },
                         x: 180,
                         y: 60,
@@ -551,6 +551,7 @@
                 ]
 
                 const makeAnnotations = d3.annotation()
+                    .type(d3.annotationLabel)
                     .annotations(annotations);
 
                 // Add annotation group to the chart with initial hidden state
@@ -713,16 +714,17 @@
                 const annotations = [
                     {
                         note: {
-                            label: "As number of cylinders increase, fuel efficiency decreases"
+                            label: "Note: as number of cylinders increase, fuel efficiency decreases"
                         },
-                        x: 300,
+                        x: 280,
                         y: 300,
-                        dx: 100,
+                        dx: 30,
                         dy: -100
                     }
                 ]
 
                 const makeAnnotations = d3.annotation()
+                    .type(d3.annotationLabel)
                     .annotations(annotations);
 
                 // Add annotation group to the chart with initial hidden state
@@ -950,7 +952,7 @@
                 const annotations = [
                     {
                         note: {
-                            label: "*Note: Tesla's fuel efficiency comes from only one model",
+                            label: "Note: Tesla's fuel efficiency comes from only one model",
                         },
                         x: 405,
                         y: 442,
@@ -961,7 +963,7 @@
                 ]
 
                 const makeAnnotations = d3.annotation()
-                    .type(d3.annotationCalloutElbow)
+                    .type(d3.annotationLabel)
                     .annotations(annotations);
 
                 // Add annotation group to the chart with initial hidden state
